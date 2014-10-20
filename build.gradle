@@ -1,0 +1,91 @@
+
+apply plugin: 'com.android.library'
+apply plugin: 'android-maven'
+
+dependencies {
+  // local jars will be packaged into the aar
+  compile files("./libs/android-support-v4.jar")
+  compile files("./libs/android-support-v7-appcompat.jar")
+}
+
+android {
+  compileSdkVersion 21
+  buildToolsVersion '21.0.1'
+
+  sourceSets {
+    main {
+      manifest.srcFile 'AndroidManifest.xml'
+      java.srcDirs = ['src']
+      resources.srcDirs = ['src']
+      res.srcDirs = ['res']
+      assets.srcDirs = ['assets']
+    }
+    debug.setRoot('build-types/debug')
+    release.setRoot('build-types/release')
+  }
+
+  lintOptions.abortOnError false
+}
+
+import org.gradle.plugins.ide.eclipse.model.internal.FileReferenceFactory
+
+eclipse {
+  classpath {
+    plusConfigurations += [ configurations.compile ]
+
+    //customizing the classes output directory:
+    defaultOutputDir = file('bin/classes')
+
+    //noExportConfigurations += [ configurations.providedCompile ]
+
+    containers = ['com.android.ide.eclipse.adt.ANDROID_FRAMEWORK',
+		  'com.android.ide.eclipse.adt.LIBRARIES',
+		  'com.android.ide.eclipse.adt.DEPENDENCIES']
+
+    file {
+      // Manipulation of the classpath XML before merging local
+      // and generated copies
+      beforeMerged { classpath ->
+    	// Remove all source entries to avoid overlap
+    	classpath.entries.removeAll() { c -> c.kind == 'src' }
+      }
+
+      // only used to explode jni .so into aar
+      whenMerged { 
+	classpath ->
+	  classpath.entries.findAll { entry ->
+	    entry.path.contains('support') ||
+	    entry.path.contains('ANDROID_FRAMEWORK') 
+	  }*.exported = false
+
+	  
+	  // this is probably not the way to do...
+	  classpath.entries.findAll { entry ->
+	    println(entry)
+	    entry.path.contains('support-v4')
+	  }*.sourcePath =  new FileReferenceFactory().fromPath("android-support-v4-sources.jar")
+
+	  classpath.entries.findAll { entry ->
+	    entry.path.contains('support-v7')
+	  }*.sourcePath =  new FileReferenceFactory().fromPath("android-support-v7-appcompat-sources.jar")
+      }
+
+      // Direct manipulation of the generated classpath XML
+      withXml {
+    	// Since non-default source directories are used
+    	// they need to be manually added to the classpath XML
+    	def node = it.asNode()
+    	// Main source directory and generated code directory
+    	node.appendNode('classpathentry kind="src" path="src"')
+    	node.appendNode('classpathentry kind="src" path="gen"')
+      }
+    }
+  }
+  project {
+    natures = ['com.android.ide.eclipse.adt.AndroidNature',
+	       'org.eclipse.jdt.core.javanature']
+    buildCommand 'com.android.ide.eclipse.adt.ResourceManagerBuilder'
+    buildCommand 'com.android.ide.eclipse.adt.PreCompilerBuilder'
+    buildCommand 'com.android.ide.eclipse.adt.ApkBuilder'
+  }
+}
