@@ -1,4 +1,3 @@
-
 apply plugin: 'com.android.library'
 apply plugin: 'android-maven'
 
@@ -7,7 +6,7 @@ dependencies {
   // including them here will mess up the eclipse project.
   // i.e. libs wont be treated as 'Android Private Libraries' and
   // you will have a bad day.
-  
+
   // local jars will be packaged into the aar
   //compile files("./libs/android-support-v4.jar")
   //compile files("./libs/android-support-v7-appcompat.jar")
@@ -32,7 +31,7 @@ android {
   lintOptions.abortOnError false
 }
 
-import org.gradle.plugins.ide.eclipse.model.internal.FileReferenceFactory
+//import org.gradle.plugins.ide.eclipse.model.internal.FileReferenceFactory
 
 eclipse {
   classpath {
@@ -51,19 +50,19 @@ eclipse {
       // Manipulation of the classpath XML before merging local
       // and generated copies
       beforeMerged { classpath ->
-    	// Remove all source entries to avoid overlap
-    	classpath.entries.removeAll() { c -> c.kind == 'src' }
+	// Remove all source entries to avoid overlap
+	classpath.entries.removeAll() { c -> c.kind == 'src' }
       }
 
       // only used to explode jni .so into aar
-      whenMerged { 
+      whenMerged {
 	classpath ->
 	  classpath.entries.findAll { entry ->
 	    entry.path.contains('support') ||
-	    entry.path.contains('ANDROID_FRAMEWORK') 
+	    entry.path.contains('ANDROID_FRAMEWORK')
 	  }*.exported = false
 
-	  
+
 	  // this is probably not the way to do...
 	  //classpath.entries.findAll { entry ->
 	  //  println(entry)
@@ -73,16 +72,17 @@ eclipse {
 	  //classpath.entries.findAll { entry ->
 	  //  entry.path.contains('support-v7')
 	  //}*.sourcePath =  new FileReferenceFactory().fromPath("android-support-v7-appcompat-sources.jar")
-      //}
+	  //}
 
-      // Direct manipulation of the generated classpath XML
-      withXml {
-    	// Since non-default source directories are used
-    	// they need to be manually added to the classpath XML
-    	def node = it.asNode()
-    	// Main source directory and generated code directory
-    	node.appendNode('classpathentry kind="src" path="src"')
-    	node.appendNode('classpathentry kind="src" path="gen"')
+	  // Direct manipulation of the generated classpath XML
+	  withXml {
+	    // Since non-default source directories are used
+	    // they need to be manually added to the classpath XML
+	    def node = it.asNode()
+	    // Main source directory and generated code directory
+	    node.appendNode('classpathentry kind="src" path="src"')
+	    node.appendNode('classpathentry kind="src" path="gen"')
+	  }
       }
     }
   }
