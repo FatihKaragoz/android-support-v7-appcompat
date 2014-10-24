@@ -2,23 +2,17 @@ apply plugin: 'com.android.library'
 apply plugin: 'android-maven'
 
 dependencies {
-  // NB: android will automatically include jar from libs folder,
-  // including them here will mess up the eclipse project.
-  // i.e. libs wont be treated as 'Android Private Libraries' and
-  // you will have a bad day.
-
   // local jars will be packaged into the aar
   provided files("./libs/android-support-v4.jar")
   provided files("./libs/android-support-v7-appcompat.jar")
 }
 
-//android.libraryVariants.all {
-//  variant -> variant.javaCompile.classpath += configurations.provided
-//}
-
 android {
-  compileSdkVersion 21
-  buildToolsVersion '21.0.1'
+  //compileSdkVersion 21
+  //buildToolsVersion '21.0.1'
+
+  compileSdkVersion androidTargetSdk()
+  buildToolsVersion "$androidBuildVersionTools"
 
   sourceSets {
     main {
@@ -34,8 +28,6 @@ android {
 
   lintOptions.abortOnError false
 }
-
-//import org.gradle.plugins.ide.eclipse.model.internal.FileReferenceFactory
 
 eclipse {
   classpath {
@@ -65,18 +57,6 @@ eclipse {
 	    entry.path.contains('support') ||
 	    entry.path.contains('ANDROID_FRAMEWORK')
 	  }*.exported = false
-
-
-	  // this is probably not the way to do...
-	  //classpath.entries.findAll { entry ->
-	  //  println(entry)
-	  //  entry.path.contains('support-v4')
-	  //}*.sourcePath =  new FileReferenceFactory().fromPath("android-support-v4-sources.jar")
-
-	  //classpath.entries.findAll { entry ->
-	  //  entry.path.contains('support-v7')
-	  //}*.sourcePath =  new FileReferenceFactory().fromPath("android-support-v7-appcompat-sources.jar")
-	  //}
 
 	  // Direct manipulation of the generated classpath XML
 	  withXml {
